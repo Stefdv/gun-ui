@@ -1,5 +1,5 @@
 ## Gun-ui elements
-The 'gun-ui' elements are created to use Gun with HTML (Polymer) webcomponents and to allow you to start using the amazing dataViz elements.
+The 'gun-ui' elements are created to use Gun with HTML (Polymer) webcomponents and to allow you to start using these amazing dataViz elements.
 ## \<gun-ui\>
 'gun-ui' is the main component that will load 'Gun' and 'gun-tag' for you. It should be used only once in your main document.
 
