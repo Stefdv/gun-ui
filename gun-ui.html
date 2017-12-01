@@ -1,0 +1,100 @@
+<script src="../../node_modules/gun/gun.min.js"></script> 
+<script src="../../node_modules/gun/lib/path.js"></script>
+<script src="../../node_modules/gun-tag/gun-tag.js"></script>
+<link rel="import" href="../polymer/polymer-element.html">
+
+<!-- gun-ui uses some extra chaining methods -->
+<script>
+  Gun.chain.valMapEnd = function (cb, end) {
+    var n = function () {};
+    var count = 0;
+    var souls = [];
+    var gun = this;
+    cb = cb || n;
+    end = end || n;
+    gun.val(function (list) {
+      var args = Array.prototype.slice.call(arguments);
+      if(!list) {end.apply(this, args);} 
+      Gun.node.is(list, function (n, soul) {
+        count += 1;
+        souls.push(soul);
+      });
+      souls.forEach(function (soul) {   
+        gun.back(-1).get(soul).val(function (val, key) {
+          count -= 1;
+          cb.apply(this, arguments);
+          if (!count) {end.apply(this, args);}
+        });
+      });
+    });
+    return gun;
+  };
+
+  Gun.chain.each = function () {
+    var each = this.map();
+    return this.val.apply(each, arguments)
+  };
+</script>
+
+<dom-module id="gun-ui">
+  <script>
+    /**
+     * `gun-ui`
+     * 
+     * Gun-ui elements are meant to be HTML-only, so this element wil load Gun.js and gun-tag.js for you.
+     * You can set any options you would normally do in js thru attributes.
+     *
+     * NOTE: Do NOT load Gun with a script tag!.
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class GunUi extends Polymer.Element {
+      static get is() { return 'gun-ui'; }
+      static get properties() {
+        return {
+          /**
+           * give it an Array with URL(s) to you server
+           * 
+           * like '["http://my-gun-server/gun"]'
+           * 
+           * Please note that if you set it as attribute you'll have to use JSON syntax '["<url>","<url>"]'
+           * @type {JSON Array}
+           */
+          peers:Array,
+          /**
+           * 'gun-tag' uses "gun-tag" as scope, you can change that.
+           * @type {String}
+           */
+          mainscope:{type:String,value:'gun-ui'},
+          /**
+           * global so i get some console loggings during development
+           * @type {Boolean}
+           */
+          dev:{type:Boolean,value:false},
+          
+          _hasGun:Boolean,
+          _hasGunTag:Boolean
+        };
+      }
+
+      constructor() {
+        super()
+      }
+
+      ready() {
+        super.ready()
+        Polymer.gunUiOptions = {
+                  peers:this.peers || null,
+                  scope:this.mainscope,
+                  dev:this.dev
+                }
+        this._hasGun = Gun==typeof('function');
+        this._hasGunTag = (this.hasGun && Gun.chain.tag)
+      }
+    }
+
+    window.customElements.define(GunUi.is, GunUi);
+  </script>
+</dom-module>
