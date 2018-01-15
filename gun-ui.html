@@ -1,56 +1,34 @@
 <script src="../../node_modules/gun/gun.min.js"></script> 
 <script src="../../node_modules/gun/lib/path.js"></script>
-<script src="../../node_modules/gun-tag/gun-tag.js"></script>
+<script src="../../node_modules/gun/lib/open.js"></script>
+<script src="../../node_modules/gun/lib/load.js"></script>
+<script src="../../node_modules/gun/lib/then.js"></script>
+
+
 <link rel="import" href="../polymer/polymer-element.html">
 
-<!-- gun-ui uses some extra chaining methods -->
-<script>
-  Gun.chain.valMapEnd = function (cb, end) {
-    var n = function () {};
-    var count = 0;
-    var souls = [];
-    var gun = this;
-    cb = cb || n;
-    end = end || n;
-    gun.val(function (list) {
-      var args = Array.prototype.slice.call(arguments);
-      if(!list) {end.apply(this, args);} 
-      Gun.node.is(list, function (n, soul) {
-        count += 1;
-        souls.push(soul);
-      });
-      souls.forEach(function (soul) {   
-        gun.back(-1).get(soul).val(function (val, key) {
-          count -= 1;
-          cb.apply(this, arguments);
-          if (!count) {end.apply(this, args);}
-        });
-      });
-    });
-    return gun;
-  };
-
-  Gun.chain.each = function () {
-    var each = this.map();
-    return this.val.apply(each, arguments)
-  };
-</script>
-
 <dom-module id="gun-ui">
+  <template>
+    <!-- this element has no further visuals -->
+    <template is="dom-if" if="[[sea]]">
+      <gun-sea></gun-sea>
+    </template>
+  </template>
+
   <script>
+
     /**
      * `gun-ui`
      * 
-     * Gun-ui elements are meant to be HTML-only, so this element wil load Gun.js and gun-tag.js for you.
-     * You can set any options you would normally do in js thru attributes.
-     *
-     * NOTE: Do NOT load Gun with a script tag!.
      *
      * @customElement
      * @polymer
      * @demo demo/index.html
      */
-    class GunUi extends Polymer.Element {
+    
+
+    /* This only runs if we actually include <gun-ui> in our page */
+    class GunUiMain extends Polymer.Element {
       static get is() { return 'gun-ui'; }
       static get properties() {
         return {
@@ -73,28 +51,182 @@
            * @type {Boolean}
            */
           dev:{type:Boolean,value:false},
+
+           /**
+           * Shows some explanations in console
+           * @type {Boolean}
+           */
+          help:{type:Boolean,value:false},
+          /**
+           * Do you want to use 'gun-tag' to have real Gun-Powder ?
+           * @type {Boolean}
+           */
+          useTags:Boolean,
           
           _hasGun:Boolean,
-          _hasGunTag:Boolean
+          _hasGunTag:Boolean,
+          sea:{type:Boolean,value:false}
         };
       }
 
       constructor() {
-        super()
+        super();
       }
 
       ready() {
-        super.ready()
-        Polymer.gunUiOptions = {
-                  peers:this.peers || null,
-                  scope:this.mainscope,
-                  dev:this.dev
-                }
-        this._hasGun = Gun==typeof('function');
-        this._hasGunTag = (this.hasGun && Gun.chain.tag)
+        super.ready();
+        this._checkDependencies() && this._createNameSpace();
       }
-    }
 
-    window.customElements.define(GunUi.is, GunUi);
+      _checkDependencies() {
+
+        if(typeof Gun !== 'function') { 
+          console.warn('you need to... "npm install gun" ');
+          return false;
+        }
+        if(this.useTag && typeof Gun.chain.tagged !== 'function') {
+          console.warn('If you want to enable tagging please ... "npm install gun-tag"');
+          return false;
+        } 
+         return true;
+       // typeof gun !='undefined' && gun instanceof Gun && gundb = gun;
+      }
+
+      _createNameSpace() {
+        if(window.GunUi && typeof window.GunUi.gun == 'function'){
+          console.error('GunUi is already defined, are you sure you only placed one - and only one - <gun-ui></gun-ui> in your application?')
+        } else {
+          window.GunUi = {
+            config:{
+                peers:this.peers || null,
+                scope:this.mainscope,
+                dev:this.dev,
+                help:this.help
+              },
+              logs:{},
+              SCOPES:{},
+              SETS:{},
+              TAGS:{} 
+            }
+          };
+          this._setupGun();
+      }
+
+      _setupGun(){
+        GunUi.gun = Gun({peers:this.peers})
+
+        this._hasGun = typeof(Gun)=='function';
+        this._hasGunTag = (this._hasGun && Gun.chain.tag);
+        if(this._hasGun) {
+          if(this.help) { 
+            let logColor = "color:blue;"
+            console.log(`%c---------- <${this.localName}> ----------`,logColor)
+            console.log("%cGun(%s) is available as `GunUi.gun`.\n",logColor,Gun.version);
+            console.log("%cIncluded modules: .path(), .open(), .load(), promise(), then(), .each(), .onward() ,valMapEnd()\n",logColor);
+
+           this._hasGunTag && 
+            console.log("%ctag(), untag(), tagged()",logColor)
+           
+          }
+        }
+        this._setAdditionalChains();
+        this.useTags && this._updateLocalGunUi()
+      }
+
+      _setAdditionalChains() {
+          Gun.chain.valMapEnd = function (cb, end) {
+            var n = function () {};
+            var count = 0;
+            var souls = [];
+            var gun = this;
+            cb = cb || n;
+            end = end || n;
+            gun.val(function (list) {
+              var args = Array.prototype.slice.call(arguments);
+              if(!list) {end.apply(this, args);} 
+              Gun.node.is(list, function (n, soul) {
+                count += 1;
+                souls.push(soul);
+              });
+              souls.forEach(function (soul) {   
+                gun.back(-1).get(soul).val(function (val, key) {
+                  count -= 1;
+                  cb.apply(this, arguments);
+                  if (!count) {end.apply(this, args);}
+                });
+              });
+            });
+            return gun;
+          };
+
+        Gun.chain.each = function () {
+          var each = this.map();
+          return this.val.apply(each, arguments)
+        };
+
+        Gun.chain.onward = function(cb, opt){
+          var gun = this;
+          cb = cb || function(){};
+          opt = (opt === true ? {full: true} : opt || {});
+
+          opt.ctx = opt.ctx || {};
+          opt.path = opt.path || [];
+
+          gun.on(function(change, field){
+            change = Gun.obj.copy(change); // due to the 'leak' bug
+            let o = Gun.obj.copy(opt);
+            o.path = opt.path.slice(0);
+            if(field){ o.path.push(field) }
+
+            Gun.obj.map(change, function(val, field){
+              if(Gun._.meta == field){ return }
+              if(Gun.obj.is(val)){
+                delete change[field];
+                let soul = Gun.val.rel.is(val);
+                let objectID = soul + field;
+                if(opt.ctx[objectID]){ return } // do not re-subscribe.
+                opt.ctx[objectID] = true; // unique subscribe!
+                if(field !== '_' && field!=='>') { 
+                   this.get(field).onward(cb, o); 
+                }
+                return;
+              }
+            }, gun);
+            if(Gun.obj.empty(change, Gun._.meta)){ return }
+            if(opt._ === false){ delete change._ }
+            cb(change, o.path);
+          }, !opt.full);
+          return gun;
+        }
+
+         
+      }
+
+      _updateLocalGunUi() {
+        GunUi.gun.getScopes()
+          .then(scopes => {
+            /* Are the scopes in the db the same as our local scopes ? */
+            GunUi.SCOPES = scopes ? Gun.obj.copy(scopes) : {};
+
+            /* if we have scopes, we should have the scope 'SETS/TAGS' */
+            GunUi.gun.get('SETS/TAGS').val(sets=> {
+                GunUi.SETS = sets ? Gun.obj.copy(sets) : {};
+            });
+
+            // if we have scopes, we should have the scope 'TAGS/TAGS'
+            GunUi.gun.get('TAGS/TAGS').val(tags=> {
+                GunUi.TAGS = tags ? Gun.obj.copy(tags) : {};
+            });
+          })
+      }
+
+     
+    }
+    window.customElements.define(GunUiMain.is, GunUiMain);
+
+
+
+
+
   </script>
 </dom-module>
