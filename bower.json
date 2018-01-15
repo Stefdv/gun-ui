@@ -7,7 +7,7 @@
   "description": "Main element for gun-ui-* elements",
   "main": "gun-ui.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^2.0.0"
+    "polymer": "Polymer/polymer#^2.3.1"
   },
   "resolutions": {
     "polymer": "^2.0.0"
