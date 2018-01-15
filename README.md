@@ -15,7 +15,7 @@ Every gun-ui- element has just 2 required attributes "soul" and "prop" that will
 #### You should use this only once in your main document!
 
 ## But Why?
-If you don'tunderstand the purpose of Gun-Ui take a look at some of the actual gun-ui- elements. ( Not yet there though :) )
+If you don't fully understand the purpose of Gun-Ui take a look at some of the actual gun-ui- elements. ( Not yet there though :) )
 
 ## (NPM) Install Gun and gun-tag
 'Gun' is not provided as bower modules so we'll have to use NPM.
