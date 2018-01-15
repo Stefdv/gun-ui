@@ -3,7 +3,7 @@ Gun-Ui is a set of webcomponents that enables you - the frontend developer - to 
 
 Every gun-ui- element has just 2 required attributes "soul" and "prop" that will link the element to a certain data-point.
 
-##Purpose
+## Purpose
 * main element for all 'gun-ui-' elements.
 * Setup Gun ( and - optional - `gun-tag`) by just providing attributes
 * makes sure that every gun-ui- element has the required properties and methods.
@@ -59,5 +59,5 @@ That's it, you now have Gun with tagging enabled.
 <b>NOTE:<br>
 Gun is available as 'GunUi.gun'</b>
 
-# Now what?
+## Now what?
 Now you are ready to start building great apps with Gun but without having to write javascript :)
