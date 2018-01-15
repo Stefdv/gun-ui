@@ -2,7 +2,7 @@
  window.GunUi = window.GunUi || {};
 /*
   gun-ui mixin;
-  - makes sure your element has a 'this.gun'
+  - makes sure your element waits for Gun
   - makes sure that your element has the right properties
   - provides a central link to the Gun API. This way i only need 
     to update this element when changes in the Gun API occur.
@@ -103,6 +103,9 @@
             }
           }
         },
+        /**
+         * Don't pay attention to this...It's about to be removed
+         */
         states:{
           type:Object,
           value:() => { 
