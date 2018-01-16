@@ -3,7 +3,7 @@
 <script src="../../node_modules/gun/lib/open.js"></script>
 <script src="../../node_modules/gun/lib/load.js"></script>
 <script src="../../node_modules/gun/lib/then.js"></script>
-
+<script src="../../node_modules/gun-tag/gun-tag.js"></script>
 
 <link rel="import" href="../polymer/polymer-element.html">
 
@@ -198,7 +198,11 @@
           }, !opt.full);
           return gun;
         }
-
+        GunUi.savenode = function(node) {
+          node = Gun.obj.copy(node);
+          node.soul=node._['#']
+          return node
+        }
          
       }
 
