@@ -1,3 +1,7 @@
+#DO NOT install this, i'm redisgning the whole thing!!
+
+
+
 ## Gun-ui elements
 Gun-Ui is a set of webcomponents that enables you - the frontend developer - to build complex - Gun - applications without writing any ( well...almost) javascript
 
